@@ -1,16 +1,13 @@
 pipeline {
     agent any
-  
-  environment {
+
+    environment {
         IMAGE_NAME = 'react-app'
         IMAGE_TAG = 'latest'
     }
+
     stages {
-        stage('Hello') {
-            steps {
-                echo 'Hello World'
-            }
-          stage('Check Files') {
+        stage('Check Files') {
             steps {
                 // Option 1: Just list repo files
                 sh 'ls -al'
@@ -38,9 +35,9 @@ pipeline {
                 }
             }
         }
-        }
     }
-  post {
+
+    post {
         always {
             // Clean up the Docker container after the build
             sh 'docker rm -f my-react-app || true'
