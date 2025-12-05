@@ -36,11 +36,4 @@ pipeline {
             }
         }
     }
-
-    post {
-        always {
-            // Clean up the Docker container after the build
-            sh 'docker rm -f my-react-app || true'
-        }
-    }
 }
