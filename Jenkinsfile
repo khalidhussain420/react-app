@@ -4,7 +4,7 @@ pipeline {
     environment {
         IMAGE_NAME = "react-app"
         CONTAINER_NAME = "react-app"
-        HOST_PORT = "8080"   // host port (free one)
+        HOST_PORT = "5000"   // host port (free one)
         CONTAINER_PORT = "3000" // app still listens on 3000 inside container
     }
 
