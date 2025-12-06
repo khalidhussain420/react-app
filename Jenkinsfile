@@ -2,52 +2,60 @@ pipeline {
     agent any
 
     environment {
-        IMAGE_NAME = 'react-app'
-        IMAGE_TAG = 'latest'
+        IMAGE_NAME = "react-app"
+        CONTAINER_NAME = "react-app"
+        HOST_PORT = "8080"   // host port (free one)
+        CONTAINER_PORT = "3000" // app still listens on 3000 inside container
     }
 
     stages {
-        stage('Check Files') {
+        stage('Checkout') {
             steps {
-                // Option 1: Just list repo files
-                sh 'ls -al'
-                // Option 2: Run tests or lint (uncomment if needed)
-                // sh 'npm install'
-                // sh 'npm run lint'
-                // sh 'npm test'
+                git branch: 'main',
+                    url: 'https://github.com/khalidhussain420/react-app.git'
             }
         }
 
         stage('Build Docker Image') {
             steps {
                 script {
-                    // Make sure you have a Dockerfile in your repo's root directory
-                    sh "docker build -t $IMAGE_NAME:$IMAGE_TAG ."
+                    sh "docker build -t ${IMAGE_NAME}:latest ."
                 }
             }
         }
-        stage('Stop Existing Container') {
-            steps {
-                script {
-                    sh '''
-                    if [ $(docker ps -aq -f name=react-app) ]; then
-                        echo "Stopping old container..."
-                        docker stop react-app || true
-                        docker rm react-app || true
-                    fi
-                    '''
-                }
-            }
-        }
-        
 
-        stage('Run Docker Container') {
+        stage('Stop Old Container') {
             steps {
                 script {
-                    // Run the container, map ports as needed
-                    sh "docker run -d -p 3000:3000 --name react-a $IMAGE_NAME:$IMAGE_TAG"
+                    sh """
+                        if [ \$(docker ps -aq -f name=${CONTAINER_NAME}) ]; then
+                            echo "Stopping old container..."
+                            docker stop ${CONTAINER_NAME} || true
+                            docker rm ${CONTAINER_NAME} || true
+                        fi
+                    """
                 }
             }
+        }
+
+        stage('Run New Container') {
+            steps {
+                script {
+                    sh """
+                        docker run -d -p ${HOST_PORT}:${CONTAINER_PORT} \
+                        --name ${CONTAINER_NAME} ${IMAGE_NAME}:latest
+                    """
+                }
+            }
+        }
+    }
+
+    post {
+        success {
+            echo "Pipeline completed successfully. App running on http://localhost:${HOST_PORT}"
+        }
+        failure {
+            echo "Pipeline failed. Check logs for details."
         }
     }
 }
