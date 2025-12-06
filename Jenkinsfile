@@ -26,6 +26,20 @@ pipeline {
                 }
             }
         }
+        stage('Stop Existing Container') {
+            steps {
+                script {
+                    sh '''
+                    if [ $(docker ps -aq -f name=react-app) ]; then
+                        echo "Stopping old container..."
+                        docker stop react-app || true
+                        docker rm react-app || true
+                    fi
+                    '''
+                }
+            }
+        }
+        
 
         stage('Run Docker Container') {
             steps {
